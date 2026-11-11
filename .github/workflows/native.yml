@@ -37,3 +37,22 @@ jobs:
       - run: node scripts/build-native.mjs
         env:
           VITE_API_URL: https://example.org
+  android-scaffold:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+        working-directory: Frontend
+      - run: npm install --no-audit --no-fund
+        working-directory: Mobile
+      - run: node scripts/build-native.mjs
+        env:
+          VITE_API_URL: https://example.org
+      - run: npm run android:init
+        working-directory: Mobile
+      - run: npx cap sync android
+        working-directory: Mobile
+      - run: test -f Mobile/android/app/src/main/AndroidManifest.xml
