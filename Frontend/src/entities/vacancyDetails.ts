@@ -52,15 +52,29 @@ export function useVacancyDetails(id: () => string | undefined) {
     const current = id()!, version = generation;
     outboundBusy.value = true; outboundError.value = ''; outboundUrl.value = '';
     // Reserve a tab in the user gesture; navigate only after a successful POST.
-    try { popup = window.open('about:blank', '_blank'); if (popup) popup.opener = null; } catch { popup = null; }
+    const bridge = (window as Window & {
+      starterNative?: { platform: string; openExternal: (url: string) => Promise<boolean> }
+    }).starterNative;
+    const useDesktopBrowser = bridge?.platform === 'electron';
+    if (!useDesktopBrowser) {
+      try { popup = window.open('about:blank', '_blank'); if (popup) popup.opener = null; }
+      catch { popup = null; }
+    }
     outboundController = new AbortController();
     try {
       const response = await session.api.outbound(current, { signal: outboundController.signal });
       if (version !== generation) return;
       const url = new URL(response.originalUrl);
       if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Unsafe URL');
-      if (popup && !popup.closed) { popup.location.replace(url.href); popup = null; }
-      else { outboundUrl.value = url.href; popup = null; }
+      if (useDesktopBrowser && bridge) {
+        if (!(await bridge.openExternal(url.href))) outboundUrl.value = url.href;
+      } else if (popup && !popup.closed) {
+        popup.location.replace(url.href);
+        popup = null;
+      } else {
+        outboundUrl.value = url.href;
+        popup = null;
+      }
     } catch (e) {
       if (version !== generation) return;
       popup?.close(); popup = null;

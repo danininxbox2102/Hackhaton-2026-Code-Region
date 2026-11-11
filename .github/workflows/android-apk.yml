@@ -1,0 +1,44 @@
+name: Android debug APK
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'Deployed HTTPS Express API origin without /api'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  android-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Frontend/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+        working-directory: Frontend
+      - run: npm install --no-audit --no-fund
+        working-directory: Mobile
+      - run: node scripts/build-native.mjs
+        env:
+          VITE_API_URL: ${{ inputs.api_url }}
+      - run: npm run android:init
+        working-directory: Mobile
+      - run: npx cap sync android
+        working-directory: Mobile
+      - run: chmod +x ./gradlew && ./gradlew --no-daemon assembleDebug
+        working-directory: Mobile/android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: starter-android-debug-apk
+          path: Mobile/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7

@@ -1,0 +1,35 @@
+name: Windows Electron installer
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'Deployed HTTPS Express API origin without /api'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  windows-installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Frontend/package-lock.json
+      - run: npm ci
+        working-directory: Frontend
+      - run: npm install --no-audit --no-fund
+        working-directory: Desktop
+      - run: node scripts/build-native.mjs
+        env:
+          VITE_API_URL: ${{ inputs.api_url }}
+      - run: npx electron-builder --win nsis --publish never
+        working-directory: Desktop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: starter-windows-unsigned-installer
+          path: Desktop/release/*.exe
+          if-no-files-found: error
+          retention-days: 7
