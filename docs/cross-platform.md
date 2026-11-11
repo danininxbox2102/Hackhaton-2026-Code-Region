@@ -104,3 +104,12 @@ Electron/Android/iOS packaging depends on platform SDKs and internet access to d
 - Automatic native builds in GitHub Actions, update delivery, production signing, icons/splash screens.
 - Persisted secure native sessions/refresh tokens: current frontend uses sessionStorage with a short-lived JWT and may require re-login after app restart.
 - Smoke-tests on physical Android and Windows; verify HTTPS CORS and font/image loading in captive networks.
+
+## On-demand CI installers
+
+After this branch is merged, Actions offers two manually triggered workflows (workflow_dispatch). Supply the **public HTTPS API origin**, without /api, under api_url.
+
+- **Android debug APK**: installs Capacitor 8, generates Android/, syncs the shared Vue bundle and uses Gradle assembleDebug. APK is an Actions artifact, not store-signed.
+- **Windows Electron installer**: builds the same Vue bundle in API mode and packages unsigned NSIS .exe; the artifact is available from the run page.
+
+Neither workflow runs without an explicit trigger and real API URL. Windows SmartScreen may warn about unsigned test installers; production distribution needs release signing and icon assets. A successful installer build is not a substitute for device tests and correct CORS/HTTPS settings. workflow_dispatch files must be on GitHub's default branch before they appear in the Actions UI.
