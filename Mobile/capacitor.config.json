@@ -1,0 +1,5 @@
+{
+  "appId": "ru.starterjob.app",
+  "appName": "СТАРТЕР",
+  "webDir": "../Frontend/dist"
+}

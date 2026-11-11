@@ -1,0 +1,12 @@
+node_modules/
+.env*
+# Native source projects can be committed after initial generation.
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+android/local.properties
+android/captures/
+ios/Pods/
+ios/DerivedData/
+*.xcuserstate

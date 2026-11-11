@@ -1,0 +1,50 @@
+{
+  "name": "starter-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "СТАРТЕР — desktop shell for the shared Vue frontend",
+  "main": "src/main.cjs",
+  "scripts": {
+    "dev": "electron .",
+    "build:web": "node ../scripts/build-native.mjs",
+    "pack:dir": "npm run build:web && electron-builder --dir",
+    "dist:win": "npm run build:web && electron-builder --win nsis",
+    "dist:linux": "npm run build:web && electron-builder --linux AppImage",
+    "dist:mac": "npm run build:web && electron-builder --mac dmg",
+    "test": "node --test test/*.test.cjs"
+  },
+  "devDependencies": {
+    "electron": "45.3.0",
+    "electron-builder": "26.18.1"
+  },
+  "build": {
+    "appId": "ru.starterjob.desktop",
+    "productName": "СТАРТЕР",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*.cjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../Frontend/dist",
+        "to": "web",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": ["nsis"]
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "category": "Office"
+    },
+    "mac": {
+      "target": ["dmg"],
+      "category": "public.app-category.productivity"
+    }
+  }
+}
